@@ -1,9 +1,9 @@
 """
 Vistas de Aprendiz (capa Controller).
 
-Equivalente a AprendizController en Spring Boot: recibe el request
-HTTP, delega la lógica al service, y devuelve la respuesta. No habla
-directo con el ORM ni con el repositorio.
+Se mantiene la misma API pública y la misma lógica de negocio.
+La diferencia es que el id se recibe como string para soportar tanto
+MySQL (entero) como MongoDB (ObjectId).
 """
 
 from rest_framework import status
@@ -38,9 +38,7 @@ class AprendizListCreateView(APIView):
         serializer = AprendizSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         aprendiz = self.service.crear(serializer.validated_data)
-        return Response(
-            AprendizSerializer(aprendiz).data, status=status.HTTP_201_CREATED
-        )
+        return Response(AprendizSerializer(aprendiz).data, status=status.HTTP_201_CREATED)
 
 
 class AprendizDetailView(APIView):
@@ -70,9 +68,7 @@ class AprendizDetailView(APIView):
         aprendiz = self._obtener_o_404(id)
         if aprendiz is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = AprendizSerializer(
-            aprendiz, data=request.data, partial=True
-        )
+        serializer = AprendizSerializer(aprendiz, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         aprendiz = self.service.actualizar(aprendiz, serializer.validated_data)
         return Response(AprendizSerializer(aprendiz).data)

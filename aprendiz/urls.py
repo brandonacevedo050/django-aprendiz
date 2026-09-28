@@ -4,5 +4,5 @@ from .views import AprendizDetailView, AprendizListCreateView
 
 urlpatterns = [
     path("", AprendizListCreateView.as_view(), name="aprendiz-list-create"),
-    path("<int:id>/", AprendizDetailView.as_view(), name="aprendiz-detail"),
+    path("<str:id>/", AprendizDetailView.as_view(), name="aprendiz-detail"),
 ]

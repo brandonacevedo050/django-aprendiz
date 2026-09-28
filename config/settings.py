@@ -9,6 +9,7 @@ naturales de Django (apps, ORM, DRF) para cumplir la misma función.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,13 +75,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------------------------
 # Base de datos
 #
-# IMPORTANTE: esta base de datos ya existe (se reutilizó la del
-# proyecto anterior en Spring Boot). El modelo Aprendiz respeta el
-# esquema de columnas ya creado (ver Mysql-init/ y la migración
-# 0001_initial con --fake-initial). MySQL para Docker/producción,
-# SQLite como fallback para pruebas locales rápidas sin contenedor.
+# IMPORTANTE: mantenemos MySQL como backend principal y añadimos
+# soporte opcional para MongoDB mediante PyMongo. La selección no se
+# hace en el frontend; se hace por variables de entorno.
 # --------------------------------------------------------------------
-DB_ENGINE = os.environ.get("DB_ENGINE", "mysql").lower()
+DB_ENGINE = os.environ.get("DATABASE_ENGINE", os.environ.get("DB_ENGINE", "mysql")).lower()
 
 if DB_ENGINE == "mysql":
     DATABASES = {
@@ -94,13 +93,20 @@ if DB_ENGINE == "mysql":
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
-else:
+elif DB_ENGINE == "mongodb":
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "ENGINE": "django.db.backends.dummy",
         }
     }
+else:
+    raise ImproperlyConfigured(
+        "DATABASE_ENGINE debe ser 'mysql' o 'mongodb'; "
+        f"se recibió {DB_ENGINE!r}."
+    )
+
+MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
+MONGODB_NAME = os.environ.get("MONGODB_NAME", "aprendiz")
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
